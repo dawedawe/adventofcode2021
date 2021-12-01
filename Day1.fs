@@ -1,0 +1,23 @@
+namespace Adventofcode2021
+
+module Day1 =
+
+    [<Literal>]
+    let InputFile = "Day1Input.txt"
+
+    let countIncs measurements =
+        let rec helper sum m =
+            match m with
+            | x :: y :: rest ->
+                let sum' = if x < y then sum + 1 else sum
+                helper sum' (y :: rest)
+            | _ -> sum
+
+        helper 0 measurements
+
+    let day1 () =
+        InputFile
+        |> System.IO.File.ReadAllLines
+        |> Array.map int
+        |> List.ofArray
+        |> countIncs
