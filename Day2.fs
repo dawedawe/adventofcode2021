@@ -26,17 +26,31 @@ module Day2 =
         | Down x -> (h, d + x)
         | Up x -> (h, d - x)
 
-    let rec drive (h, d) cmds =
+    let rec drive f pos cmds =
         match cmds with
         | c :: rest ->
-            let (h', d') = doCommand c (h, d)
-            drive (h', d') rest
-        | [] -> (h, d)
+            let pos' = f c pos
+            drive f pos' rest
+        | [] -> pos
 
     let day2 () =
         InputFile
         |> System.IO.File.ReadAllLines
         |> Array.map parseLine
         |> List.ofArray
-        |> drive (0, 0)
+        |> drive doCommand (0, 0)
         |> fun (h, d) -> h * d
+
+    let doCommandPart2 c (h, d, a) =
+        match c with
+        | Forward x -> (h + x, d + a * x, a)
+        | Down x -> (h, d, a + x)
+        | Up x -> (h, d, a - x)
+
+    let day2Part2 () =
+        InputFile
+        |> System.IO.File.ReadAllLines
+        |> Array.map parseLine
+        |> List.ofArray
+        |> drive doCommandPart2 (0, 0, 0)
+        |> fun (h, d, _) -> h * d
