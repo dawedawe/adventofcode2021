@@ -76,3 +76,27 @@ module Day4 =
         |> System.IO.File.ReadAllLines
         |> parseInput
         |> playBoards
+
+    let rec playBoardsPart2 completedBoards (numbers, boards) =
+        match numbers with
+        | [] -> failwith "no numbers left"
+        | n :: rest ->
+            let boards' = boards |> List.map (playBoard n)
+            let winningBoards = boards' |> List.filter boardWon
+            let completedBoards' = List.append completedBoards winningBoards
+
+            let boardsLeft =
+                boards'
+                |> List.filter (fun b -> not (List.contains b completedBoards'))
+
+            if List.isEmpty boardsLeft then
+                let s = List.last completedBoards' |> sumOfUnmarked
+                s * n
+            else
+                playBoardsPart2 completedBoards' (rest, boardsLeft)
+
+    let day4Part2 () =
+        InputFile
+        |> System.IO.File.ReadAllLines
+        |> parseInput
+        |> playBoardsPart2 List.empty
