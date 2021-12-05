@@ -19,21 +19,40 @@ module Day5 =
 
     let isHorizontalOrVertical { Start = x1, y1; End = x2, y2 } = x1 = x2 || y1 = y2
 
+    let points { Start = x1, y1; End = x2, y2 } =
+        seq {
+            let xs =
+                if x1 = x2 then
+                    List.replicate (abs (y1 - y2) + 1) x1
+                else
+                    let xInc = if x1 < x2 then 1 else - 1
+                    [ x1..xInc..x2 ]
+
+            let ys =
+                if y1 = y2 then
+                    List.replicate (abs (x1 - x2) + 1) y1
+                else
+                    let yInc = if y1 < y2 then 1 else - 1
+                    [ y1..yInc..y2 ]
+
+            for x, y in List.zip xs ys do
+                x, y
+        }
+
     let countOverlapPoints lines =
         let coordinates = Dictionary<int * int, int>()
 
         let rec helper lines =
             match lines with
-            | [||] -> coordinates
+            | [||] -> ()
             | _ ->
-                let { Start = x1, y1; End = x2, y2 } = lines.[0]
-
-                for x in (min x1 x2) .. (max x1 x2) do
-                    for y in (min y1 y2) .. (max y1 y2) do
-                        if coordinates.ContainsKey(x, y) then
-                            coordinates.[(x, y)] <- coordinates.[(x, y)] + 1
-                        else
-                            coordinates.[(x, y)] <- 1
+                lines.[0]
+                |> points
+                |> Seq.iter (fun p ->
+                    if coordinates.ContainsKey(p) then
+                        coordinates.[p] <- coordinates.[p] + 1
+                    else
+                        coordinates.[p] <- 1)
 
                 helper (Array.tail lines)
 
@@ -45,4 +64,10 @@ module Day5 =
         |> System.IO.File.ReadAllLines
         |> Array.map parseLine
         |> Array.filter isHorizontalOrVertical
+        |> countOverlapPoints
+
+    let day5Part2 () =
+        InputFile
+        |> System.IO.File.ReadAllLines
+        |> Array.map parseLine
         |> countOverlapPoints
