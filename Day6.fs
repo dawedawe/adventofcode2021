@@ -7,24 +7,36 @@ module Day6 =
 
     let decrease i = if i > 0 then i - 1 else 6
 
-    let rec simulate days fish =
-        if days > 0 then
-            let newFish =
-                fish
-                |> List.sumBy (fun i -> if i = 0 then 1 else 0)
-                |> fun length -> List.replicate length 8
-
-            let fish' = fish |> List.map decrease
-            let fish'' = List.append fish' newFish
-            simulate (days - 1) fish''
+    let rec simulate days (fishAgesAndCounts: (int * int64) list) =
+        if days = 0 then
+            fishAgesAndCounts |> List.sumBy snd
         else
-            fish
+            let newFishCount =
+                fishAgesAndCounts
+                |> Map.ofList
+                |> Map.tryFind 0
+                |> Option.defaultValue 0
 
-    let day6 () =
-        InputFile
+            let fishAgesAndCounts' =
+                fishAgesAndCounts
+                |> List.map (fun (a, c) -> (decrease a, c))
+                |> List.groupBy fst
+                |> List.map (fun (age, ageCountList) -> (age, ageCountList |> List.sumBy snd))
+                |> Map.ofList
+                |> Map.add 8 newFishCount
+
+            simulate (days - 1) (fishAgesAndCounts' |> Map.toList)
+
+    let initialFish path =
+        path
         |> System.IO.File.ReadAllText
         |> fun s -> s.Split(',')
         |> List.ofArray
         |> List.map int
-        |> simulate 80
-        |> List.length
+        |> List.countBy id
+        |> List.map (fun (a, c) -> (a, int64 c))
+
+    let day6 () = InputFile |> initialFish |> simulate 80
+
+    let day6Part2 () =
+        InputFile |> initialFish |> simulate 256
