@@ -1,4 +1,4 @@
 ﻿open Adventofcode2021
 
-let r = Day6.day6Part2 ()
+let r = Day7.day7 ()
 printfn "%A" r
