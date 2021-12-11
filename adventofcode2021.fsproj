@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Day10.fs" />
+    <Compile Include="Day11.fs" />
     <Compile Include="Program.fs" />
     <Content Include="*Input.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
