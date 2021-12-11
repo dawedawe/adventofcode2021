@@ -10,8 +10,8 @@ module Day11 =
         |> Array.map (fun line -> line |> Array.map (fun x -> x + 1))
 
     let getNeighbours (octopuses: int [] []) (x, y) =
-        let maxX = Array.length octopuses.[0] - 1
-        let maxY = Array.length octopuses - 1
+        let maxX = octopuses.[0].Length - 1
+        let maxY = octopuses.Length - 1
 
         [ (x - 1, y - 1)
           (x, y - 1)
@@ -39,8 +39,8 @@ module Day11 =
         | [] -> octopuses
 
     let rec flash (octopuses: int [] []) alreadyFlashed =
-        let maxX = Array.length octopuses.[0] - 1
-        let maxY = Array.length octopuses - 1
+        let maxX = octopuses.[0].Length - 1
+        let maxY = octopuses.Length - 1
 
         let flashers =
             seq {
@@ -62,8 +62,8 @@ module Day11 =
             flash octopuses' alreadyFlashed'
 
     let countFlashers (octopuses: int [] []) =
-        let maxX = Array.length octopuses.[0] - 1
-        let maxY = Array.length octopuses - 1
+        let maxX = octopuses.[0].Length - 1
+        let maxY = octopuses.Length - 1
 
         seq {
             for y in 0..maxY do
@@ -73,8 +73,8 @@ module Day11 =
         |> Seq.sum
 
     let resetFlashers (octopuses: int [] []) =
-        let maxX = Array.length octopuses.[0] - 1
-        let maxY = Array.length octopuses - 1
+        let maxX = octopuses.[0].Length - 1
+        let maxY = octopuses.Length - 1
 
         for y in 0..maxY do
             for x in 0..maxX do
@@ -99,3 +99,25 @@ module Day11 =
         |> System.IO.File.ReadAllLines
         |> Array.map (fun line -> line.ToCharArray() |> Array.map (string >> int))
         |> step 100 0
+
+    let runTillSync (octopuses: int [] []) =
+        let octopusesCount = octopuses.Length * octopuses.[0].Length
+
+        let rec step n octopuses =
+            let octopuses' = incAll octopuses
+            let octopuses'' = flash octopuses' List.empty
+            let flashesOfStep = countFlashers octopuses''
+            let octopuses''' = resetFlashers octopuses''
+
+            if flashesOfStep = octopusesCount then
+                n
+            else
+                step (n + 1) octopuses'''
+
+        step 1 octopuses
+
+    let day11Part2 () =
+        InputFile
+        |> System.IO.File.ReadAllLines
+        |> Array.map (fun line -> line.ToCharArray() |> Array.map (string >> int))
+        |> runTillSync
