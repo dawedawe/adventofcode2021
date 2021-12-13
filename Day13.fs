@@ -13,8 +13,6 @@ module Day13 =
         | Left of int
         | Up of int
 
-    // fold along x=655
-    // fold along y=447
     let parseInstrLine (s: string) =
         let idx = s.IndexOf('=')
         let d = s.[idx - 1]
@@ -74,3 +72,31 @@ module Day13 =
         let dots, instructions = InputFile |> System.IO.File.ReadAllLines |> parse
         let paper = fold dots instructions.[0]
         paper.Length
+
+    let printPaper (dots: (int * int) []) =
+        let maxX = dots |> Array.maxBy fst |> fst
+        let maxY = dots |> Array.maxBy snd |> snd
+
+        for y in 0..maxY do
+            for x in 0..maxX do
+                let c =
+                    if (dots |> Array.contains (x, y)) then
+                        '#'
+                    else
+                        ' '
+
+                printf "%c" c
+
+            printfn ""
+
+    let rec foldPart2 (dots: (int * int) []) instr =
+        if Array.isEmpty instr then
+            dots
+        else
+            let dots' = fold dots instr.[0]
+            let instr' = Array.tail instr
+            foldPart2 dots' instr'
+
+    let day13Part2 () =
+        let dots, instructions = InputFile |> System.IO.File.ReadAllLines |> parse
+        foldPart2 dots instructions |> printPaper
