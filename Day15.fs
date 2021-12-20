@@ -64,3 +64,47 @@ module Day15 =
         let target = cave.[0].Length - 1, cave.Length - 1
         let dist, prev = dijkstra target cave
         dist[target]
+
+    let raiseRisk xDir yDir risk =
+        let risk' = risk + xDir + yDir
+        if risk' > 9 then risk' - 9 else risk'
+
+    let copyCave (cave: int [] []) =
+        [| for y in 0 .. cave.Length - 1 do
+               Array.copy cave.[y] |]
+
+    let repeatCave (cave: int [] []) xDir yDir =
+        let maxX = cave.[0].Length - 1
+        let maxY = cave.Length - 1
+        let cave' = copyCave cave
+
+        for y in 0..maxY do
+            for x in 0..maxX do
+                cave'.[y].[x] <- raiseRisk xDir yDir cave.[y].[x]
+
+        cave'
+
+    let day15Part2 () =
+        let cave =
+            InputFile
+            |> System.IO.File.ReadAllLines
+            |> Array.map (fun s -> s.ToCharArray())
+            |> Array.map (fun a -> a |> Array.map (string >> int))
+
+        let mutable entireCave = copyCave cave
+
+        for x in 1..4 do
+            let cave' = repeatCave cave x 0
+
+            for y in 0 .. cave.Length - 1 do
+                entireCave.[y] <- Array.append entireCave.[y] cave'.[y]
+
+        let copy = copyCave entireCave
+
+        for y in 1..4 do
+            let cave' = repeatCave copy 0 y
+            entireCave <- Array.append entireCave cave'
+
+        let target = entireCave.[0].Length - 1, entireCave.Length - 1
+        let dist, prev = dijkstra target entireCave
+        dist[target]
