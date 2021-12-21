@@ -13,13 +13,23 @@ module Day16 =
         | BitLength
         | PacketCount
 
+    type TypeId =
+        | Sum
+        | Product
+        | Min
+        | Max
+        | LiteralValue
+        | Gt
+        | Lt
+        | Eq
+
     type Content =
         | LiteralValues of int64 list
         | OperatorSubPackages of Packet list
 
     and Packet =
         { Version: int
-          TypeId: int
+          TypeId: TypeId
           Contents: Content
           LengthTypeId: int option }
 
@@ -52,7 +62,17 @@ module Day16 =
 
     let parseVersion = parseFirst3Bits
 
-    let parseTypeId = parseFirst3Bits
+    let parseTypeId bits =
+        match parseFirst3Bits bits with
+        | 0 -> Sum
+        | 1 -> Product
+        | 2 -> Min
+        | 3 -> Max
+        | 4 -> LiteralValue
+        | 5 -> Gt
+        | 6 -> Lt
+        | 7 -> Eq
+        | _ -> failwith "unsupported typeid"
 
     let getGroups (bits: int list) =
         let rec helper (bits: int list) groups =
@@ -120,13 +140,13 @@ module Day16 =
 
             let version = bits |> List.take 3 |> parseVersion
             let bits' = bits |> List.skip 3
-            let typeId = bits' |> List.take 3 |> parseVersion
+            let typeId = bits' |> List.take 3 |> parseTypeId
 
             let bits'' = bits' |> List.skip 3
 
             let (newPackages: Packet list), bits''' =
                 match typeId with
-                | 4 ->
+                | TypeId.LiteralValue ->
                     let value, bits''' = parseLiteralValue bits''
 
                     let p: Packet =
@@ -173,8 +193,8 @@ module Day16 =
 
             let subSum =
                 match p.Contents with
-                | Content.LiteralValues _ -> 0
-                | Content.OperatorSubPackages subs -> sumVersions 0 subs
+                | LiteralValues _ -> 0
+                | OperatorSubPackages subs -> sumVersions 0 subs
 
             let sum'' = sum' + subSum
             sumVersions sum'' rest
@@ -186,3 +206,42 @@ module Day16 =
         |> parsePackage None List.empty
         |> fst
         |> sumVersions 0
+
+    let rec calc (p: Packet) =
+        let values = p.Contents |> getValues
+
+        match p.TypeId with
+        | Sum -> values |> List.reduce (+)
+        | Product -> values |> List.reduce (*)
+        | Min -> values |> List.min
+        | Max -> values |> List.max
+        | Gt ->
+            if values.[0] > values.[1] then
+                1L
+            else
+                0L
+        | Lt ->
+            if values.[0] < values.[1] then
+                1L
+            else
+                0L
+        | Eq ->
+            if values.[0] = values.[1] then
+                1L
+            else
+                0L
+        | LiteralValue -> values.[0]
+
+    and getValues (contents: Content) =
+        match contents with
+        | Content.LiteralValues v -> v
+        | Content.OperatorSubPackages p -> p |> List.map calc
+
+    let day16Part2 () =
+        InputFile
+        |> System.IO.File.ReadAllText
+        |> parse
+        |> parsePackage None List.empty
+        |> fst
+        |> List.head
+        |> calc
