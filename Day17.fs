@@ -79,3 +79,25 @@ module Day17 =
         |> System.IO.File.ReadAllText
         |> parse
         |> findVelocity
+
+
+    let findDistinctVelocities targetArea =
+        let startPos = (0, 0)
+
+        seq {
+            for x in 0..400 do
+                for y in -200..400 do
+                    let r = shoot startPos (x, y) targetArea
+
+                    match r with
+                    | Some _ -> yield (x, y)
+                    | None -> ()
+        }
+        |> Seq.distinct
+        |> Seq.length
+
+    let day17Part2 () =
+        InputFile
+        |> System.IO.File.ReadAllText
+        |> parse
+        |> findDistinctVelocities
