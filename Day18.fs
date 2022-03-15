@@ -195,3 +195,18 @@ module Day18 =
         |> System.IO.File.ReadAllLines
         |> Array.reduce add
         |> magnitude
+
+    let day18Part2 () =
+        let numbers = System.IO.File.ReadAllLines InputFile
+        let indexes = [ 0 .. numbers.Length - 1 ]
+
+        seq {
+            for n in indexes do
+                let rest = indexes |> List.filter (fun i -> i <> n)
+
+                for r in rest do
+                    (numbers[n], numbers[r])
+                    (numbers[r], numbers[n])
+        }
+        |> Seq.map (fun (a, b) -> ((add a b) |> magnitude))
+        |> Seq.max
