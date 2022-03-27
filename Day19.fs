@@ -211,9 +211,7 @@ module Day19 =
             Some normalizedScanner
         | None -> None
 
-    let day19 () =
-        let scanners = InputFile |> System.IO.File.ReadAllLines |> parse
-
+    let findPositions (scanners: Scanner list) =
         let mutable normalizedScanners = [ scanners[0] ]
         let mutable toDoScanners = scanners.Tail
         let mutable beaconsSet = Set.ofArray scanners[0].Beacons
@@ -237,4 +235,24 @@ module Day19 =
                             |> List.filter (fun s -> s.Id <> normS.Id)
                     | None -> ()
 
+        (normalizedScanners, beaconsSet)
+
+    let day19 () =
+        let scanners = InputFile |> System.IO.File.ReadAllLines |> parse
+        let (_, beaconsSet) = findPositions scanners
         beaconsSet.Count
+
+    let manhattanDistance (pos0, pos1) =
+        abs  ((max pos0.X pos1.X) - (min pos0.X pos1.X))
+        + abs ((max pos0.Y pos1.Y) - (min pos0.Y pos1.Y))
+        + abs ((max pos0.Z pos1.Z) - (min pos0.Z pos1.Z))
+
+    let day19Part2 () =
+        let scanners = InputFile |> System.IO.File.ReadAllLines |> parse
+        let (normalizedScanners, _) = findPositions scanners
+        let scannerPositions =
+            normalizedScanners
+            |> List.map (fun s -> s.Pos)
+        List.allPairs scannerPositions scannerPositions
+        |> List.map manhattanDistance
+        |> List.max
