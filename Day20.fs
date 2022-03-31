@@ -48,14 +48,37 @@ module Day20 =
                       yield algo[idx] |]
                |> System.String |]
 
+    let calcFallback (algo: string) previous =
+        previous
+        |> List.replicate 9
+        |> toBinary
+        |> toInt
+        |> fun i -> algo[i]
+
+    let rec enhanceN n fallback (algo: string) (inputImage: string array) =
+        if n = 0 then
+            inputImage
+        else
+            let image = enhance fallback algo inputImage
+            let fallback' = calcFallback algo fallback
+            enhanceN (n - 1) fallback' algo image
+
     let day20 () =
         let lines = InputFile |> System.IO.File.ReadAllLines
         let algo = lines[0]
         let picture = lines[2..]
 
-        picture
-        |> enhance '.' algo
-        |> enhance algo[0] algo
+        enhanceN 2 '.' algo picture
+        |> Array.sumBy (fun line ->
+            line.ToCharArray()
+            |> Array.sumBy (fun c -> if c = '#' then 1 else 0))
+
+    let day20Part2 () =
+        let lines = InputFile |> System.IO.File.ReadAllLines
+        let algo = lines[0]
+        let picture = lines[2..]
+
+        enhanceN 50 '.' algo picture
         |> Array.sumBy (fun line ->
             line.ToCharArray()
             |> Array.sumBy (fun c -> if c = '#' then 1 else 0))
